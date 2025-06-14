@@ -71,10 +71,7 @@
               <i class="el-icon-user-solid"></i> {{ group.totalPeople }} 位
             </span>
             <span>
-              <i class="el-icon-user"></i> 大 {{ group.adultCount }}
-            </span>
-            <span>
-              <i class="el-icon-user"></i> 小 {{ group.childCount }}
+              <i class="el-icon-user"></i> 人數 {{ group.adultCount }}
             </span>
           </div>
         </div>
@@ -84,11 +81,9 @@
             <span class="phone">{{ r.phone }}</span>
           </div>
           <div class="res-col count">
-            <span>{{ r.peopleCount }} 大</span>
+            <span>{{ r.peopleCount }} 位</span>
             <span v-if="r.childrenCount > 0">、{{ r.childrenCount }} 小</span>
-            <span v-if="r.note && r.note.includes('兒童椅')" class="child-seat"
-              >(兒童椅)</span
-            >
+            <span v-if="r.note && r.note.includes('兒童椅')" class="child-seat">(兒童椅)</span>
           </div>
           <div class="res-col table">
             {{ r.tableNumbers?.join(", ") || "未安排" }}
@@ -104,12 +99,22 @@
             <span class="status-label">{{ r.status }}</span>
           </div>
           <div class="res-col action">
-            <el-button type="success" size="small" @click="onEdit(r)"
-              >修改</el-button
+            <!-- 狀態切換下拉在最左側 -->
+            <el-select
+              v-model="r._statusTemp"
+              size="small"
+              style="width: 110px; margin-right:8px;"
+              @change="s => onChangeStatus(r, s)"
             >
-            <el-button type="danger" size="small" @click="onDelete(r)"
-              >刪除</el-button
-            >
+              <el-option
+                v-for="opt in statusChangeOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
+            <el-button type="success" size="small" @click="onEdit(r)">修改</el-button>
+            <el-button type="danger" size="small" @click="onDelete(r)">刪除</el-button>
           </div>
         </div>
       </div>
@@ -134,6 +139,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import axios from "axios";
@@ -150,6 +156,21 @@ const statusOptions = [
   "已帶位",
   "未出席",
 ];
+
+const statusMap = {
+  "BOOKED": "已預訂",
+  "CANCELLED": "已取消",
+  "COMPLETED": "用餐完畢",
+  "CHECKED_IN": "已帶位"
+};
+
+const statusChangeOptions = [
+  { value: "BOOKED", label: "已預訂" },
+  { value: "CHECKED_IN", label: "已帶位" },
+  { value: "COMPLETED", label: "用餐完畢" }
+  
+];
+
 const selectedDate = ref(dayjs().format("YYYY-MM-DD"));
 const statusFilter = ref("全部");
 const searchText = ref("");
@@ -174,7 +195,6 @@ async function fetchUserOptions() {
   }
 }
 
-// 分組 by 小時
 const groupedReservations = computed(() => {
   let filtered = reservationList.value;
   if (statusFilter.value && statusFilter.value !== "全部") {
@@ -225,13 +245,11 @@ const stats = computed(() => {
 function statusColorClass(status) {
   switch (status) {
     case "已預訂":
-      return "status-red";
-    case "已發送提醒":
       return "status-orange";
-    case "已保留訂位":
-      return "status-green";
-    case "已取消":
+    case "用餐完畢":
       return "status-grey";
+    case "已取消":
+      return "status-red";
     case "已帶位":
       return "status-blue";
     case "未出席":
@@ -263,10 +281,12 @@ async function fetchReservations() {
       name: r.user ? r.user.fullName : r.guestName,
       phone: r.user ? r.user.phone : r.guestPhone,
       peopleCount: r.numberOfGuests,
-      childrenCount: 0,
+      childrenCount: r.childrenCount || 0,
       tableNumbers: (r.tables || []).map((t) => t.name),
       tables: r.tables || [],
       status: statusText(r.status),
+      statusCode: r.status,
+      _statusTemp: r.status,   // 狀態下拉選單綁定
       reservationTime: r.reservationTime,
       note: r.note || "",
       userId: r.user ? r.user.id : null,
@@ -280,20 +300,23 @@ async function fetchReservations() {
 }
 
 function formatTime(dt) {
-  // 根據後端資料格式調整，如果是 ISO 字串可直接 format
   return dayjs(dt).format('HH:mm');
 }
 
 function statusText(status) {
-  switch (status) {
-    case "BOOKED":
-      return "已預訂";
-    case "CHECKED_IN":
-      return "已帶位";
-    case "CANCELED":
-      return "已取消";
-    default:
-      return status;
+  return statusMap[status] || status;
+}
+
+async function onChangeStatus(r, newStatus) {
+  if (r.statusCode === newStatus) return;
+  try {
+    await axios.put(`/api/restaurant/${r.id}/status`, null, {
+      params: { status: newStatus }
+    });
+    ElMessage.success("狀態已更新");
+    await fetchReservations();
+  } catch (e) {
+    ElMessage.error("狀態更新失敗：" + (e.response?.data?.message || e.message));
   }
 }
 
@@ -311,6 +334,7 @@ function onEdit(r) {
 }
 
 onMounted(fetchReservations);
+
 </script>
 
 <style scoped>

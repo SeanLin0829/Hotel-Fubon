@@ -56,6 +56,6 @@ public class RestaurantReservation {
     private List<RestaurantTable> tables;
 
     public enum ReservationStatus {
-        BOOKED, CANCELLED, COMPLETED
+        BOOKED, CANCELLED, COMPLETED , CHECKED_IN
     }
 }

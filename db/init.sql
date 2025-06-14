@@ -129,23 +129,25 @@ create table reservation_room
 
 create index room_id
     on reservation_room (room_id);
-
 create table restaurant_reservation
 (
     id               bigint auto_increment
         primary key,
-    user_id          bigint                                                              null,
-    reservation_time datetime                                                            not null,
-    end_time         datetime                                                            not null,
-    number_of_guests int                                                                 not null,
-    note             varchar(255)                                                        null,
-    status           enum ('BOOKED', 'CANCELLED', 'COMPLETED') default 'BOOKED'          null,
-    created_at       timestamp                                 default CURRENT_TIMESTAMP null,
-    guest_name       varchar(255)                                                        null,
-    guest_phone      varchar(255)                                                        null,
+    user_id          bigint                                                                            null,
+    reservation_time datetime                                                                          not null,
+    end_time         datetime                                                                          not null,
+    number_of_guests int                                                                               not null,
+    note             varchar(255)                                                                      null,
+    status           enum ('BOOKED', 'CANCELLED', 'COMPLETED', 'CHECKED_IN') default 'BOOKED'          null,
+    created_at       timestamp                                               default CURRENT_TIMESTAMP null,
+    guest_name       varchar(255)                                                                      null,
+    guest_phone      varchar(255)                                                                      null,
     constraint restaurant_reservation_ibfk_1
         foreign key (user_id) references user (id)
 );
+
+create index user_id
+    on restaurant_reservation (user_id);
 
 create table reservation_table
 (
@@ -158,16 +160,10 @@ create table reservation_table
         foreign key (table_id) references restaurant_table (id)
 );
 
-create index table_id
-    on reservation_table (table_id);
 
-create index user_id
-    on restaurant_reservation (user_id);
-
-
-INSERT INTO hotel_db.role (id, name) VALUES (1, 'admin');
-INSERT INTO hotel_db.role (id, name) VALUES (2, 'staff');
-INSERT INTO hotel_db.role (id, name) VALUES (3, 'customer');
+INSERT INTO hotel_db.role (name) VALUES ('admin');
+INSERT INTO hotel_db.role (name) VALUES ('staff');
+INSERT INTO hotel_db.role (name) VALUES ('customer');
 
 
 
@@ -197,8 +193,6 @@ INSERT INTO hotel_db.user (username, password, full_name, email, phone, role_id)
 INSERT INTO hotel_db.user (username, password, full_name, email, phone, role_id) VALUES ('staff_fay10', 'faypw001', 'Fay Lin', 'fay10@company.com', '0922000010', 2);
 
 
-
-
 INSERT INTO hotel_db.room_type (name, base_price) VALUES ('單人房', 1500.00);
 INSERT INTO hotel_db.room_type (name, base_price) VALUES ('雙人房', 2500.00);
 INSERT INTO hotel_db.room_type (name, base_price) VALUES ('家庭房', 4000.00);
@@ -216,13 +210,10 @@ INSERT INTO hotel_db.room (room_number, type_id, is_active) VALUES ('401', 4, 1)
 INSERT INTO hotel_db.room (room_number, type_id, is_active) VALUES ('402', 4, 1);
 
 
-
 INSERT INTO hotel_db.shift_template (shift_type, start_time, end_time, is_cross_day) VALUES ('morning', '06:00:00', '14:00:00', 0);
 INSERT INTO hotel_db.shift_template (shift_type, start_time, end_time, is_cross_day) VALUES ('evening', '14:00:00', '22:00:00', 0);
 INSERT INTO hotel_db.shift_template (shift_type, start_time, end_time, is_cross_day) VALUES ('night', '22:00:00', '06:00:00', 0);
 INSERT INTO hotel_db.shift_template (shift_type, start_time, end_time, is_cross_day) VALUES ('off', '00:00:00', '00:00:00', 0);
-
-
 
 INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('A1', 2, 'AVAILABLE');
 INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('A2', 2, 'AVAILABLE');
@@ -230,6 +221,118 @@ INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('B1', 4, 
 INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('B2', 4, 'AVAILABLE');
 INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('C1', 6, 'AVAILABLE');
 INSERT INTO hotel_db.restaurant_table (name, capacity, status) VALUES ('VIP1', 10, 'AVAILABLE');
+
+
+
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-14 11:30:00', '2025-06-14 13:00:00', 4, '', 'COMPLETED', '2025-06-14 17:22:26', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (4, '2025-06-14 16:30:00', '2025-06-14 18:00:00', 2, '慶生', 'COMPLETED', '2025-06-14 18:58:58', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (null, '2025-06-14 19:30:00', '2025-06-14 21:00:00', 4, '甲殼類過敏', 'COMPLETED', '2025-06-14 18:59:41', '王小明', '0912345678');
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (4, '2025-06-17 17:00:00', '2025-06-17 18:30:00', 3, '慶生', 'BOOKED', '2025-06-14 19:09:02', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (null, '2025-06-17 18:00:00', '2025-06-17 19:30:00', 2, '', 'BOOKED', '2025-06-14 19:09:29', '孫小美', '0987654321');
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (9, '2025-06-18 12:00:00', '2025-06-18 13:30:00', 10, '同學會', 'BOOKED', '2025-06-14 19:10:12', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (4, '2025-06-18 18:00:00', '2025-06-18 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:15:38', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-18 18:00:00', '2025-06-18 19:30:00', 4, '', 'BOOKED', '2025-06-14 20:16:06', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-19 18:00:00', '2025-06-19 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:16:38', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-20 18:00:00', '2025-06-20 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:16:42', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-21 18:00:00', '2025-06-21 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:16:46', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-22 18:00:00', '2025-06-22 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:16:49', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (5, '2025-06-23 18:00:00', '2025-06-23 19:30:00', 4, '會員預約 - 生日慶祝', 'BOOKED', '2025-06-14 20:16:53', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (6, '2025-06-19 18:30:00', '2025-06-19 20:00:00', 4, '', 'BOOKED', '2025-06-14 20:17:53', null, null);
+INSERT INTO hotel_db.restaurant_reservation (user_id, reservation_time, end_time, number_of_guests, note, status, created_at, guest_name, guest_phone) VALUES (7, '2025-06-20 18:30:00', '2025-06-20 20:00:00', 4, '', 'BOOKED', '2025-06-14 20:18:13', null, null);
+
+
+
+
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (5, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (7, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (9, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (10, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (11, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (12, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (13, 1);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (2, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (7, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (9, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (10, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (11, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (12, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (13, 2);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (1, 3);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (4, 3);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (8, 3);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (3, 4);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (8, 4);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (14, 5);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (15, 5);
+INSERT INTO hotel_db.reservation_table (reservation_id, table_id) VALUES (6, 6);
+
+
+INSERT INTO hotel_db.reservation (user_id, checkin_date, checkout_date, guest_count, total_price, status, note, created_at, updated_at, guest_name, guest_phone) VALUES (4, '2025-06-14', '2025-06-15', 2, 6500.00, '已退房', '', '2025-06-14 17:03:07', '2025-06-14 18:47:55', null, null);
+INSERT INTO hotel_db.reservation (user_id, checkin_date, checkout_date, guest_count, total_price, status, note, created_at, updated_at, guest_name, guest_phone) VALUES (5, '2025-06-14', '2025-06-20', 2, 36000.00, '已入住', '高樓層', '2025-06-14 18:47:18', '2025-06-14 18:47:58', null, null);
+INSERT INTO hotel_db.reservation (user_id, checkin_date, checkout_date, guest_count, total_price, status, note, created_at, updated_at, guest_name, guest_phone) VALUES (null, '2025-06-17', '2025-06-27', 4, 40000.00, '預約中', '無菸房', '2025-06-14 18:54:19', '2025-06-14 18:54:19', '王小明', '0912345678');
+INSERT INTO hotel_db.reservation (user_id, checkin_date, checkout_date, guest_count, total_price, status, note, created_at, updated_at, guest_name, guest_phone) VALUES (9, '2025-06-18', '2025-06-25', 4, 35000.00, '預約中', '', '2025-06-14 18:55:22', '2025-06-14 18:55:22', null, null);
+INSERT INTO hotel_db.reservation (user_id, checkin_date, checkout_date, guest_count, total_price, status, note, created_at, updated_at, guest_name, guest_phone) VALUES (11, '2025-06-19', '2025-06-30', 4, 44000.00, '預約中', '', '2025-06-14 18:55:49', '2025-06-14 18:55:49', null, null);
+
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (4, 3);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (1, 4);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (4, 4);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (1, 5);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (5, 5);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (3, 6);
+INSERT INTO hotel_db.reservation_room (reservation_id, room_id) VALUES (2, 7);
+
+
+
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-05', 'morning', 'scheduled', '', '2025-06-14 16:42:01');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-06', 'morning', 'scheduled', '', '2025-06-14 16:45:41');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-07', 'morning', 'scheduled', '', '2025-06-14 16:45:42');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-08', 'morning', 'scheduled', '', '2025-06-14 16:45:43');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-09', 'morning', 'scheduled', '', '2025-06-14 16:45:44');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (2, '2025-06-10', 'morning', 'scheduled', '', '2025-06-14 16:45:45');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-05', 'morning', 'scheduled', '', '2025-06-14 18:28:43');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-06', 'morning', 'scheduled', '', '2025-06-14 18:28:44');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-07', 'morning', 'scheduled', '', '2025-06-14 18:28:45');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-08', 'morning', 'scheduled', '', '2025-06-14 18:28:47');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-09', 'off', 'scheduled', '', '2025-06-14 18:28:48');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (3, '2025-06-10', 'off', 'scheduled', '', '2025-06-14 18:28:50');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-05', 'evening', 'scheduled', '', '2025-06-14 18:28:51');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-06', 'evening', 'scheduled', '', '2025-06-14 18:28:53');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-07', 'off', 'scheduled', '', '2025-06-14 18:28:54');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-08', 'evening', 'scheduled', '', '2025-06-14 18:28:56');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-09', 'evening', 'scheduled', '', '2025-06-14 18:28:57');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (14, '2025-06-10', 'evening', 'scheduled', '', '2025-06-14 18:28:58');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-05', 'evening', 'scheduled', '', '2025-06-14 18:29:00');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-06', 'off', 'scheduled', '', '2025-06-14 18:29:02');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-07', 'evening', 'scheduled', '', '2025-06-14 18:29:04');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-08', 'evening', 'scheduled', '', '2025-06-14 18:29:05');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-09', 'evening', 'scheduled', '', '2025-06-14 18:29:07');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (15, '2025-06-10', 'evening', 'scheduled', '', '2025-06-14 18:29:08');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-08', 'evening', 'scheduled', '', '2025-06-14 18:29:10');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-07', 'evening', 'scheduled', '', '2025-06-14 18:29:11');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-06', 'evening', 'scheduled', '', '2025-06-14 18:29:15');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-05', 'off', 'scheduled', '', '2025-06-14 18:29:17');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-09', 'off', 'scheduled', '', '2025-06-14 18:29:20');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (16, '2025-06-10', 'morning', 'scheduled', '', '2025-06-14 18:29:23');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-05', 'night', 'scheduled', '', '2025-06-14 18:29:24');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-06', 'night', 'scheduled', '', '2025-06-14 18:29:26');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-07', 'night', 'scheduled', '', '2025-06-14 18:29:27');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-08', 'night', 'scheduled', '', '2025-06-14 18:29:29');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-09', 'night', 'scheduled', '', '2025-06-14 18:29:30');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (17, '2025-06-10', 'off', 'scheduled', '', '2025-06-14 18:29:31');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-05', 'night', 'scheduled', '', '2025-06-14 18:29:32');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-06', 'night', 'scheduled', '', '2025-06-14 18:29:34');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-07', 'night', 'scheduled', '', '2025-06-14 18:29:35');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-08', 'off', 'scheduled', '', '2025-06-14 18:29:37');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-09', 'morning', 'scheduled', '', '2025-06-14 18:29:39');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (18, '2025-06-10', 'night', 'scheduled', '', '2025-06-14 18:29:40');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-05', 'off', 'scheduled', '', '2025-06-14 18:29:42');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-06', 'off', 'scheduled', '', '2025-06-14 18:29:43');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-07', 'off', 'scheduled', '', '2025-06-14 18:29:45');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-08', 'night', 'scheduled', '', '2025-06-14 18:29:48');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-09', 'night', 'scheduled', '', '2025-06-14 18:29:53');
+INSERT INTO hotel_db.employee_schedule (employee_id, shift_date, shift_type, status, note, created_at) VALUES (19, '2025-06-10', 'night', 'scheduled', '', '2025-06-14 18:29:54');
+
+
 
 
 

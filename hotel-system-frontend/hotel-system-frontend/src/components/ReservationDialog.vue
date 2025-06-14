@@ -10,9 +10,41 @@
       <el-form-item label="預約方式">
         <el-radio-group v-model="form.type">
           <el-radio label="member">會員預約</el-radio>
-          <el-radio label="guest">匿名預約</el-radio>
+          <el-radio label="guest">非會員預約</el-radio>
         </el-radio-group>
       </el-form-item>
+
+      <!-- 顧客資訊 -->
+      <template v-if="form.type === 'member'">
+        <el-form-item label="顧客" prop="userId" required>
+          <el-select
+            v-model="form.userId"
+            filterable
+            allow-create
+            default-first-option
+            placeholder="請輸入或選擇顧客"
+            style="width: 100%"
+            :reserve-keyword="false"
+            :value-key="'id'"
+            :label-key="'name'"
+          >
+            <el-option
+              v-for="u in userOptions"
+              :key="u.id"
+              :label="u.name"
+              :value="u.id"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+      <template v-else>
+        <el-form-item label="姓名" prop="guestName" required>
+          <el-input v-model="form.guestName" />
+        </el-form-item>
+        <el-form-item label="電話" prop="guestPhone" required>
+          <el-input v-model="form.guestPhone" />
+        </el-form-item>
+      </template>
 
       <!-- 日期 -->
       <el-form-item label="預約日期" prop="dateOnly" required>
@@ -67,38 +99,6 @@
       <el-form-item label="備註">
         <el-input v-model="form.note" placeholder="備註" />
       </el-form-item>
-
-      <!-- 顧客資訊 -->
-      <template v-if="form.type === 'member'">
-        <el-form-item label="顧客" prop="userId" required>
-          <el-select
-            v-model="form.userId"
-            filterable
-            allow-create
-            default-first-option
-            placeholder="請輸入或選擇顧客"
-            style="width: 100%"
-            :reserve-keyword="false"
-            :value-key="'id'"
-            :label-key="'name'"
-          >
-            <el-option
-              v-for="u in userOptions"
-              :key="u.id"
-              :label="u.name"
-              :value="u.id"
-            />
-          </el-select>
-        </el-form-item>
-      </template>
-      <template v-else>
-        <el-form-item label="姓名" prop="guestName" required>
-          <el-input v-model="form.guestName" />
-        </el-form-item>
-        <el-form-item label="電話" prop="guestPhone" required>
-          <el-input v-model="form.guestPhone" />
-        </el-form-item>
-      </template>
     </el-form>
 
     <template #footer>

@@ -7,6 +7,7 @@ import com.hotel.hotel_system.repository.RestaurantReservationRepository;
 import com.hotel.hotel_system.repository.RestaurantTableRepository;
 import com.hotel.hotel_system.repository.UserRepository;
 import com.hotel.hotel_system.service.RestaurantReservationService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -200,6 +201,16 @@ public class RestaurantReservationServiceImpl implements RestaurantReservationSe
         reservation.setGuestName(guestName);
         reservation.setGuestPhone(guestPhone);
 
+        return reservationRepository.save(reservation);
+    }
+
+    // 更新訂位狀態
+    @Override
+    @Transactional
+    public RestaurantReservation updateReservationStatus(Long id, RestaurantReservation.ReservationStatus status) {
+        RestaurantReservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("找不到訂位: " + id));
+        reservation.setStatus(status);
         return reservationRepository.save(reservation);
     }
 }

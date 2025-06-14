@@ -41,6 +41,8 @@
         >
           <el-option label="全部" value="" />
           <el-option label="預約中" value="預約中" />
+          <el-option label="已入住" value="已入住" />
+          <el-option label="已退房" value="已退房" />
           <el-option label="已取消" value="已取消" />
         </el-select>
         <el-button type="primary" @click="handleSearch">搜尋</el-button>
@@ -87,7 +89,7 @@
       <el-table-column label="操作" width="300">
         <template #default="scope">
           <div style="display: flex; gap: 8px; flex-wrap: wrap">
-             <el-dropdown @command="(val) => updateStatus(scope.row.id, val)">
+            <el-dropdown @command="(val) => updateStatus(scope.row.id, val)">
               <el-button size="small" type="warning">
                 更改狀態<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
@@ -302,10 +304,18 @@ const rules = {
   ],
 };
 
-// 取得資料
 onMounted(() => {
+  const today = new Date();
+  const after30Days = new Date();
+  after30Days.setDate(today.getDate() + 30);
+
+  const format = (date) => date.toISOString().split("T")[0];
+
+  search.value.dateRange = [format(today), format(after30Days)];
+
   fetchReservations();
   fetchRoomOptions();
+  fetchCustomers();
 });
 
 async function fetchReservations() {
@@ -359,7 +369,8 @@ const filteredReservations = computed(() => {
       // 入住日期區間
       if (search.value.dateRange?.length === 2) {
         const [start, end] = search.value.dateRange;
-        if (r.checkinDate < start || r.checkinDate > end) return false;
+        // 如果訂單的退房日早於篩選起始日，或入住日晚於篩選結束日 => 不顯示
+        if (r.checkoutDate < start || r.checkinDate > end) return false;
       }
       return true;
     })

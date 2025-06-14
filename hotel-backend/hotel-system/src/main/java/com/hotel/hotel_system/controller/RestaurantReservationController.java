@@ -100,4 +100,13 @@ public class RestaurantReservationController {
         );
         return ResponseEntity.ok(updated);
     }
+    //  更新訂位狀態
+    @PutMapping("/{id}/status")
+    public ResponseEntity<RestaurantReservation> updateStatus(
+            @PathVariable Long id,
+            @RequestParam("status") RestaurantReservation.ReservationStatus status
+    ) {
+        RestaurantReservation updated = restaurantReservationService.updateReservationStatus(id, status);
+        return ResponseEntity.ok(updated);
+    }
 }

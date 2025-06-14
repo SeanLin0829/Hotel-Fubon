@@ -42,4 +42,6 @@ public interface RestaurantReservationService {
     public List<RestaurantReservation> getAllReservations();
 
     List<RestaurantReservation> getReservationsByDate(LocalDateTime date);
+
+    RestaurantReservation updateReservationStatus(Long id, RestaurantReservation.ReservationStatus status);
 }
