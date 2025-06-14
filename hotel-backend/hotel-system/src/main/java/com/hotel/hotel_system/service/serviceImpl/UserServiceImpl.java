@@ -1,7 +1,5 @@
 package com.hotel.hotel_system.service.serviceImpl;
 
-import com.hotel.hotel_system.DTO.UserCreateRequest;
-import com.hotel.hotel_system.entity.Role;
 import com.hotel.hotel_system.entity.User;
 import com.hotel.hotel_system.repository.RoleRepository;
 import com.hotel.hotel_system.repository.UserRepository;
@@ -46,30 +44,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new EntityNotFoundException("找不到帳號: " + username));
     }
 
-    @Override
-    public User createUser(UserCreateRequest req) {
-        if (userRepository.findByUsername(req.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("帳號已存在: " + req.getUsername());
-        }
 
-        if (req.getRole() == null || req.getRole().isBlank()) {
-            throw new IllegalArgumentException("請提供角色名稱");
-        }
-
-        Role role = roleRepository.findByName(req.getRole())
-                .orElseThrow(() -> new EntityNotFoundException("角色不存在: " + req.getRole()));
-
-        User user = new User(
-                req.getUsername(),
-                req.getFullName(),
-                req.getEmail(),
-                req.getPhone(),
-                req.getPassword()
-        );
-        user.setRole(role);
-
-        return userRepository.save(user);
-    }
 
     @Override
     public void deleteUser(Long id) {

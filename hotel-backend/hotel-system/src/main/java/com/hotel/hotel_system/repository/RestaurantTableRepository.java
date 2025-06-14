@@ -20,6 +20,7 @@ public interface RestaurantTableRepository extends JpaRepository<RestaurantTable
     List<RestaurantTable> findByIdIn(List<Long> ids);
 
 
+    // 查詢在指定時間範圍內可用的餐桌
     @Query("""
     SELECT t FROM RestaurantTable t
     WHERE t.status = 'AVAILABLE'

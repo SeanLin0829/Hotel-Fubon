@@ -3,12 +3,10 @@ package com.hotel.hotel_system.controller;
 
 import com.hotel.hotel_system.DTO.LoginRequest;
 import com.hotel.hotel_system.DTO.LoginResponse;
-import com.hotel.hotel_system.DTO.UserCreateRequest;
 import com.hotel.hotel_system.DTO.UserDTO;
 import com.hotel.hotel_system.entity.User;
 import com.hotel.hotel_system.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,6 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
+    // 使用者登入
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
         User user = userService.login(req.getUsername(), req.getPassword());
@@ -34,6 +33,7 @@ public class UserController {
         return ResponseEntity.ok(res);
     }
 
+    // 查詢所有使用者
     @GetMapping
     public List<UserDTO> getAllUsers() {
         return userService.findAll().stream()
@@ -48,7 +48,7 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
-
+    // 透過ID查詢單一使用者
     @GetMapping("/{id}")
     public UserDTO getUserById(@PathVariable Long id) {
         User user = userService.findById(id);
@@ -62,6 +62,7 @@ public class UserController {
         );
     }
 
+    // 查詢所有role為staff的使用者
     @GetMapping("/staff")
     public List<UserDTO> getAllStaff() {
         return userService.findAll().stream()
@@ -77,6 +78,7 @@ public class UserController {
                 .collect(Collectors.toList());
     }
 
+    // 查詢所有role為customer的使用者
     @GetMapping("/customer")
     public List<UserDTO> getAllCustomer() {
         return userService.findAll().stream()
@@ -93,21 +95,7 @@ public class UserController {
     }
 
 
-    @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserCreateRequest req) {
-        User created = userService.createUser(req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                new UserDTO(
-                        created.getId(),
-                        created.getUsername(),
-                        created.getFullName(),
-                        created.getEmail(),
-                        created.getPhone(),
-                        created.getRole().getName()
-                )
-        );
-    }
-
+    // 刪除使用者
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);

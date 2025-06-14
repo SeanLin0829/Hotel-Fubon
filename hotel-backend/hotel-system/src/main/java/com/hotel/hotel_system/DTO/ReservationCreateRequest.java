@@ -5,6 +5,7 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+// 用於創建新預訂的請求資料傳輸物件，包含用戶ID、入住和退房日期、客人數量、備註、房間ID列表等信息。
 @Data
 public class ReservationCreateRequest {
     private Long userId;

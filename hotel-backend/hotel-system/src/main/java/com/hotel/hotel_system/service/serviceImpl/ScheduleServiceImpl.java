@@ -31,14 +31,17 @@ public class ScheduleServiceImpl implements ScheduleService {
     private final ShiftTemplateRepository shiftTemplateRepo;
     private final UserRepository userRepo;
 
+    // 新增一筆排班紀錄
     @Override
     @Transactional
     public EmployeeSchedule createSchedule(ScheduleRequest request) {
         User employee = userRepo.findById(request.getEmployeeId())
                 .orElseThrow(() -> new IllegalArgumentException("找不到員工"));
+        // 檢查 role 是否為員工
         if (employee.getRole().getId() != 2) {
             throw new IllegalArgumentException("僅限員工（staff）可以被排班");
         }
+        // 檢查是否已經有排班
         scheduleRepo.findByEmployeeAndShiftDateAndShiftType(employee, request.getShiftDate(), request.getShiftType())
                 .ifPresent(s -> {
                     throw new IllegalArgumentException("此員工在該日已排此班別，請勿重複排班");
@@ -47,8 +50,10 @@ public class ScheduleServiceImpl implements ScheduleService {
         ShiftTemplate shiftTemplate = shiftTemplateRepo.findByShiftType(request.getShiftType())
                 .orElseThrow(() -> new IllegalArgumentException("無此班別定義"));
 
+        // 驗證排班規則(連續上班日)
         validateConsecutiveDays(employee, request.getShiftDate(), request.getShiftType());
-        validateShiftSequence(employee, request.getShiftDate(), request.getShiftType()); // <--- 新增
+        // 驗證排班規則(班別銜接)
+        validateShiftSequence(employee, request.getShiftDate(), request.getShiftType());
 
         EmployeeSchedule schedule = EmployeeSchedule.builder()
                 .employee(employee)
@@ -62,32 +67,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         return scheduleRepo.save(schedule);
     }
 
-    private void validateRestTime(User employee, LocalDate newDate, ShiftTemplate newShift) {
-        List<EmployeeSchedule> previousSchedules = scheduleRepo.findByEmployeeAndShiftDateBetween(
-                employee, newDate.minusDays(1), newDate);
-
-        LocalDateTime newStart = LocalDateTime.of(newDate, newShift.getStartTime());
-        if (newShift.isCrossDay()) {
-            newStart = newStart.minusDays(1);
-        }
-
-        for (EmployeeSchedule prev : previousSchedules) {
-            ShiftTemplate prevTemplate = shiftTemplateRepo.findByShiftType(prev.getShiftType())
-                    .orElse(null);
-            if (prevTemplate == null) continue;
-
-            LocalDateTime prevEnd = LocalDateTime.of(prev.getShiftDate(), prevTemplate.getEndTime());
-            if (prevTemplate.isCrossDay()) {
-                prevEnd = prevEnd.plusDays(1);
-            }
-
-            Duration gap = Duration.between(prevEnd, newStart);
-            if (!gap.isNegative() && gap.toHours() < 12) {
-                throw new IllegalArgumentException("排班間隔須至少 12 小時");
-            }
-        }
-    }
-
+    // 驗證排班規則(連續上班日)
     private void validateConsecutiveDays(User employee, LocalDate newDate, ShiftTemplate.ShiftType newType) {
         if (newType == ShiftTemplate.ShiftType.off) return; // 休假直接 return
 
@@ -119,8 +99,9 @@ public class ScheduleServiceImpl implements ScheduleService {
         }
     }
 
+    // 驗證排班規則(班別銜接)
     private void validateShiftSequence(User employee, LocalDate newDate, ShiftTemplate.ShiftType newType) {
-        // 新班是休假，完全不檢查
+        // 如果是安排休假，就不用檢查
         if (newType == ShiftTemplate.ShiftType.off) return;
 
         // 1. 前一天
@@ -136,7 +117,7 @@ public class ScheduleServiceImpl implements ScheduleService {
             }
         }
 
-        // 2. **後一天**（這裡是重點！）
+        // 2. 檢查後一天
         Optional<EmployeeSchedule> nextOpt = scheduleRepo.findByEmployeeAndShiftDate(employee, newDate.plusDays(1))
                 .stream().findFirst();
         if (nextOpt.isPresent()) {
@@ -172,18 +153,20 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
 
-
+    // 查詢某位員工的排班紀錄
     @Override
     public EmployeeSchedule getSchedule(Long id) {
         return scheduleRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("找不到此排班紀錄"));
     }
 
+    // 查詢所有排班紀錄
     @Override
     public List<EmployeeSchedule> getAllSchedules() {
         return scheduleRepo.findAll();
     }
 
+    // 修改排班紀錄
     @Override
     @Transactional
     public EmployeeSchedule updateSchedule(Long id, ScheduleRequest request) {
@@ -210,7 +193,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         ShiftTemplate newTemplate = shiftTemplateRepo.findByShiftType(newType)
                 .orElseThrow(() -> new IllegalArgumentException("查無班別定義"));
 
-        // 驗證：休息時間 + 連續工作天數
+        // 驗證：班別銜接 + 連續工作天數
         validateConsecutiveDays(employee, request.getShiftDate(), request.getShiftType());
         validateShiftSequence(employee, request.getShiftDate(), request.getShiftType());
         // 更新欄位
@@ -223,6 +206,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         return scheduleRepo.save(existing);
     }
 
+    // 取消排班紀錄
     @Override
     @Transactional
     public void cancelSchedule(Long id) {
@@ -230,6 +214,7 @@ public class ScheduleServiceImpl implements ScheduleService {
         scheduleRepo.delete(schedule);
     }
 
+    // 查詢指定月份的排班紀錄
     @Override
     public List<ScheduleCalendarView> getSchedulesByMonth(int year, int month) {
         LocalDate start = DateUtils.getMonthStartDate(year, month);
@@ -247,36 +232,4 @@ public class ScheduleServiceImpl implements ScheduleService {
                 s.getStatus()
         )).toList();
     }
-
-    @Override
-    public List<EmployeeSchedule> getEmployeeSchedulesByMonth(Long employeeId, int year, int month) {
-        User user = userRepo.findById(employeeId)
-                .orElseThrow(() -> new IllegalArgumentException("找不到員工"));
-        if (user.getRole().getId() != 2) {
-            throw new IllegalArgumentException("此使用者不是員工");
-        }
-
-        LocalDate start = DateUtils.getMonthStartDate(year, month);
-        LocalDate end = DateUtils.getMonthEndDate(year, month);
-
-        return scheduleRepo.findByEmployeeAndShiftDateBetween(user, start, end);
-    }
-
-    @Override
-    public List<ScheduleStatusSummary> getScheduleSummaryByMonth(int year, int month) {
-        LocalDate start = DateUtils.getMonthStartDate(year, month);
-        LocalDate end = DateUtils.getMonthEndDate(year, month);
-
-        List<LocalDate> allDays = start.datesUntil(end.plusDays(1)).toList();
-
-        // 建立 LocalDate → 總數 Map
-        Map<LocalDate, Long> countMap = scheduleRepo.findByShiftDateBetween(start, end).stream()
-                .collect(Collectors.groupingBy(EmployeeSchedule::getShiftDate, Collectors.counting()));
-
-        return allDays.stream()
-                .map(date -> new ScheduleStatusSummary(date, countMap.getOrDefault(date, 0L)))
-                .toList();
-    }
-
-
 }

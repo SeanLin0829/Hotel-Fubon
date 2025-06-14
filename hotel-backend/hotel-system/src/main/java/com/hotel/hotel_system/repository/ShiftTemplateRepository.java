@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface ShiftTemplateRepository extends JpaRepository<ShiftTemplate, Long> {
 
-    /**
-     * 根據班別類型查詢對應的班別定義（例如：查詢 morning 班的時間）。
-     */
+
+    //根據班別類型查詢對應的班別定義（例如：查詢 morning 班的時間）。
+
     Optional<ShiftTemplate> findByShiftType(ShiftTemplate.ShiftType shiftType);
 }

@@ -40,6 +40,7 @@ public class RestaurantReservationServiceImpl implements RestaurantReservationSe
         return reservationRepository.findByReservationTimeBetween(start, end);
     }
 
+    // 建立餐廳訂位
     @Override
     public RestaurantReservation createReservation(
             Long userId,
@@ -104,13 +105,13 @@ public class RestaurantReservationServiceImpl implements RestaurantReservationSe
         return reservationRepository.save(reservation);
     }
 
-
+    // 查詢單一訂位
     @Override
     public Optional<RestaurantReservation> getReservation(Long id) {
-        // 查詢單一訂位
         return reservationRepository.findById(id);
     }
 
+    // 查詢某位使用者的所有訂位
     @Override
     public List<RestaurantReservation> getUserReservations(Long userId) {
         // 查詢某位使用者的所有訂位（可優化為 repository 查詢）
@@ -119,6 +120,7 @@ public class RestaurantReservationServiceImpl implements RestaurantReservationSe
                 .collect(Collectors.toList());
     }
 
+    // 取消餐廳訂位 (更改狀態為 CANCELLED)
     @Override
     public void cancelReservation(Long id) {
         // 取消指定 ID 的訂位
@@ -128,11 +130,13 @@ public class RestaurantReservationServiceImpl implements RestaurantReservationSe
         reservationRepository.save(reservation);
     }
 
+    // 查詢可用餐桌
     @Override
     public List<RestaurantTable> getAvailableTables(LocalDateTime startTime, LocalDateTime endTime) {
         return tableRepository.findAvailableTables(startTime, endTime);
     }
 
+    // 更新餐廳訂位
     @Override
     public RestaurantReservation updateReservation(
             Long reservationId,

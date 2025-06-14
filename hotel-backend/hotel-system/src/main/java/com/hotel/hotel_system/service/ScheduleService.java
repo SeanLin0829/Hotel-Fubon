@@ -17,6 +17,4 @@ public interface ScheduleService {
     EmployeeSchedule updateSchedule(Long id, ScheduleRequest request);
     void cancelSchedule(Long id);
     List<ScheduleCalendarView> getSchedulesByMonth(int year, int month);
-    List<EmployeeSchedule> getEmployeeSchedulesByMonth(Long employeeId, int year, int month);
-    List<ScheduleStatusSummary> getScheduleSummaryByMonth(int year, int month);
 }

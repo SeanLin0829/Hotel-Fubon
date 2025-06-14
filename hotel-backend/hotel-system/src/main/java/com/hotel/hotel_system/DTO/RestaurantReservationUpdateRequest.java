@@ -5,6 +5,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+
+// 用於更新餐廳預約的請求資料傳輸物件，包含新的預約時間、修改後的人數、桌位 ID 清單和備註等信息。
 @Data
 public class RestaurantReservationUpdateRequest {
     private LocalDateTime reservationTime; // 新的訂位時間

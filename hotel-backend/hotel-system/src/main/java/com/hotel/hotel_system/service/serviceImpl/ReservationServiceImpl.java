@@ -29,24 +29,27 @@ public class ReservationServiceImpl implements ReservationService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
 
+    // 取得所有訂單
     @Override
     public List<Reservation> getAllReservations() {
         return reservationRepository.findAll();
     }
 
+    // 建立訂房訂單
     @Override
     @Transactional
     public Reservation createReservation(ReservationCreateRequest req) {
         User user = null;
+        // 如果有提供 userId，則查詢使用者
         if (req.getUserId() != null) {
             user = userRepository.findById(req.getUserId())
                     .orElseThrow(() -> new EntityNotFoundException("找不到使用者"));
         }
-
+        // 檢查入住和退房日期
         if (!req.getCheckoutDate().isAfter(req.getCheckinDate())) {
             throw new IllegalArgumentException("退房日期必須晚於入住日期至少一天");
         }
-
+        // 檢查房間數量
         List<Room> rooms = roomRepository.findAllById(req.getRoomIds());
         if (rooms.size() != req.getRoomIds().size()) {
             throw new IllegalArgumentException("部分房間不存在");
@@ -54,11 +57,11 @@ public class ReservationServiceImpl implements ReservationService {
 
         List<Long> overlappingRoomIds = reservationRoomRepository.findOverlappingRoomIds(
                 req.getRoomIds(), req.getCheckinDate(), req.getCheckoutDate());
-
+        // 檢查是否有重疊的房間預約
         if (!overlappingRoomIds.isEmpty()) {
             throw new IllegalStateException("以下房間在該時段已被預約: " + overlappingRoomIds);
         }
-
+        // 計算總價
         long days = ChronoUnit.DAYS.between(req.getCheckinDate(), req.getCheckoutDate());
         BigDecimal totalPrice = rooms.stream()
                 .map(room -> room.getType().getBasePrice().multiply(BigDecimal.valueOf(days)))
@@ -87,17 +90,20 @@ public class ReservationServiceImpl implements ReservationService {
         return saved;
     }
 
+    // 根據訂單ID取得單一訂單
     @Override
     public Reservation getReservationById(Long id) {
         return reservationRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("找不到訂單"));
     }
 
+    // 根據使用者ID取得訂單列表
     @Override
     public List<Reservation> getReservationsByUserId(Long userId) {
         return reservationRepository.findByUserId(userId);
     }
 
+    // 修改訂房資訊
     @Override
     @Transactional
     public Reservation updateReservation(Long id, ReservationCreateRequest req) {
@@ -156,7 +162,7 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationRepository.save(reservation);
     }
 
-
+    // 取消訂單(更改狀態為已取消)
     @Override
     @Transactional
     public void cancelReservation(Long id) {
@@ -167,6 +173,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservationRepository.save(reservation);
     }
 
+    // 更新訂單狀態(已取消、預約中、入住、退房)
     @Override
     public Reservation updateReservationStatus(Long id, Reservation.ReservationStatus newStatus) {
         Reservation reservation = reservationRepository.findById(id)

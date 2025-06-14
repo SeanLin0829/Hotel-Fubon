@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// 用於顯示預訂詳情的資料傳輸物件，包含預訂ID、用戶名、入住和退房日期、客人數量、狀態、備註、總價、房間名稱和號碼等信息。
 @Data
 public class ReservationDTO {
     private Long id;

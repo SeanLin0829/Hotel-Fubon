@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.Map;
 
+// 全域例外處理器
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

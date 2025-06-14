@@ -17,6 +17,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final ReservationRoomRepository reservationRoomRepository;
 
+    // 查詢指定時段的空房
     @Override
     public List<Room> findAvailableRooms(LocalDate checkin, LocalDate checkout) {
         List<Long> bookedRoomIds = reservationRoomRepository

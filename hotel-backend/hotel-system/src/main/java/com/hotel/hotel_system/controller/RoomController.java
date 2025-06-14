@@ -20,6 +20,7 @@ public class RoomController {
 
     private final RoomService roomService;
 
+    // 根據查詢所有可用房間
     @GetMapping("/available")
     public ResponseEntity<List<Room>> findAvailableRooms(
             @RequestParam("checkin") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate checkin,

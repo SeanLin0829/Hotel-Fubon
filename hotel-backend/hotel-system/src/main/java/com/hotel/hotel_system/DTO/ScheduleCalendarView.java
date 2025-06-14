@@ -7,6 +7,8 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+
+// 用於顯示排班日曆的資料傳輸物件，包含排班ID、員工ID、全名、班次日期、班次類型、備註和狀態。
 @Data
 @AllArgsConstructor
 public class ScheduleCalendarView {

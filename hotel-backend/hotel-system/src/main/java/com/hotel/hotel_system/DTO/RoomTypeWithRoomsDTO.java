@@ -5,6 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 
+// 用於表示房型及其包含的房間資訊的資料傳輸物件，包含房型ID、名稱、基礎價格和房間列表。
 @Data
 public class RoomTypeWithRoomsDTO {
     private Long typeId;
